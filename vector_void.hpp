@@ -28,7 +28,7 @@
 
 struct Void
 {
-    const auto operator<=>(const Void&) const = default;
+    auto operator<=>(const Void&) const = default;
 };
 
 class VectorVoid : private Void
