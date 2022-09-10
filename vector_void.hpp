@@ -34,14 +34,76 @@ struct Void
 class VectorVoid : private Void
 {
 public:
+    class Iterator : private Void
+    {
+    public:
+        using value_type = Void;
+        using size_type  = std::size_t;
+        using reference  = const Void&;
+        using difference_type = std::ptrdiff_t;
+    
+        auto operator<=>(const Iterator&) const = default;
+
+        reference operator*() const noexcept
+        {
+            return *this;
+        }
+
+        reference operator++() noexcept
+        {
+            ++ptr;
+            return *this;
+        }
+
+        reference operator--() noexcept
+        {
+            --ptr;
+            return *this;
+        }
+
+        Iterator operator+(difference_type inc) const noexcept
+        {
+            return Iterator(ptr + inc);
+        }
+
+        Iterator operator-(difference_type dec) const noexcept
+        {
+            return Iterator(ptr - dec);
+        }
+
+        difference_type operator-(Iterator rhs) const noexcept
+        {
+            return ptr - rhs.ptr;
+        }
+
+        Iterator& operator+=(difference_type inc) noexcept
+        {
+            ptr += inc;
+            return *this;
+        }
+
+        Iterator& operator-=(difference_type dec) noexcept
+        {
+            ptr -= dec;
+            return *this;
+        }
+    private:
+        friend class VectorVoid;
+        Iterator(size_t s) : ptr(s) { }
+
+        size_t ptr = 0;
+    };
+
     /*
      * Member types
      */
     using value_type      = Void;
     using size_type       = std::size_t;
     using difference_type = std::ptrdiff_t;
-    using reference       = Void&;
+    using reference       = const Void&;
     using const_reference = const Void&;
+    using iterator        = Iterator;
+    using const_iterator  = Iterator;
 
     /*
      * Constructors, destructors, assignments
@@ -108,6 +170,29 @@ public:
 
     // Void* data() noexcept;
     // const Void* data() noexcept;
+
+    /*
+     * Iterators
+     */
+    iterator begin() const noexcept
+    {
+        return iterator(0);
+    }
+
+    iterator end() const noexcept
+    {
+        return iterator(s);
+    }
+
+    const_iterator cbegin() const noexcept
+    {
+        return const_iterator(0);
+    }
+
+    const_iterator cend() const noexcept
+    {
+        return const_iterator(s);
+    }
 
     /*
      * Capacity

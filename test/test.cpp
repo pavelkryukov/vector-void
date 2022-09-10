@@ -26,6 +26,23 @@
 
 static_assert(sizeof(VectorVoid) == sizeof(std::size_t));
 
+template<typename It>
+void check_iterators(It begin, It end, std::size_t length)
+{   
+    EXPECT_LE(begin, end);
+    EXPECT_EQ(begin + length, end);
+    EXPECT_EQ(end - length, begin);
+    EXPECT_EQ(end - begin, length);
+
+    auto begin_bak = begin;
+    auto end_bak = end;
+    begin += length;
+    end -= length;
+    
+    EXPECT_EQ(begin, end_bak);
+    EXPECT_EQ(end, begin_bak);
+}
+
 template<typename T>
 void check(T& v, std::size_t length)
 {
@@ -42,6 +59,21 @@ void check(T& v, std::size_t length)
 
     EXPECT_EQ(v.front(), v[0]);
     EXPECT_EQ(v.back(), v[length - 1]);
+
+    std::size_t count = 0;
+    for (auto& e : v) {
+        EXPECT_EQ(e, Void{});
+        ++count;
+    }
+    EXPECT_EQ(count, length);
+
+    for (auto it = v.end(); it != v.begin(); --it)
+        --count;
+
+    EXPECT_EQ(count, 0);
+
+    check_iterators(v.begin(), v.end(), length);
+    check_iterators(v.cbegin(), v.cend(), length);
 }
 
 TEST(VectorVoidTest, Empty)
