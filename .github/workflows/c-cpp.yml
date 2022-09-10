@@ -1,0 +1,81 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  gcc-test:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        std:
+          - c++20
+        compiler:
+          - g++-10
+          - g++-11
+          - clang++-10
+          - clang++-11
+          - clang++-12
+        exclude:
+          - std: c++20
+            compiler: g++-8
+          - std: c++20
+            compiler: g++-9
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install
+      run: sudo apt-get install ${{matrix.compiler}} libgtest-dev
+    - name: Make test
+      working-directory: test
+      run: make test
+      env:
+        CXX: ${{matrix.compiler}}
+        CXXFLAGS: '-fprofile-arcs -ftest-coverage -g --std=${{matrix.std}}'
+        LDFLAGS: '-lgcov --coverage'
+    - name: Run test
+      working-directory: test
+      run: ./test
+    - name: Codecov
+      working-directory: test
+      run: bash <(curl -s https://codecov.io/bash) -x "gcov"
+    - name: Codecov
+      working-directory: test
+      run: bash <(curl -s https://codecov.io/bash) -x "llvm-cov gcov"
+
+  ubsan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install
+      run: sudo apt-get install libgtest-dev
+    - name: Make test
+      working-directory: test
+      run: make test
+      env:
+        CXX: clang++
+        CXXFLAGS: '-g -fsanitize=undefined'
+        LDFLAGS: '-fsanitize=undefined -lgcc_s --rtlib=compiler-rt'
+    - name: Run test
+      working-directory: test
+      run: ./test
+
+  asan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install
+      run: sudo apt-get install libgtest-dev
+    - name: Make test
+      working-directory: test
+      run: make test
+      env:
+        CXX: clang++
+        CXXFLAGS: '-fsanitize=address'
+        LDFLAGS: '-fsanitize=address'
+    - name: Run test
+      working-directory: test
+      run: ./test
