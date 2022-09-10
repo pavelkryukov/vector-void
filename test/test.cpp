@@ -33,8 +33,11 @@ void check(T& v, std::size_t length)
     EXPECT_EQ(v.size(), length);
     EXPECT_GE(v.capacity(), v.size());
     EXPECT_THROW(v.at(length), std::out_of_range);
+ 
     if (length > 0) {
         EXPECT_EQ(v[5], v[2]);
+        EXPECT_EQ(v.at(5), v[2]);
+        EXPECT_EQ(v.at(5), v.at(4));
     }
 
     EXPECT_EQ(v.front(), v[0]);
